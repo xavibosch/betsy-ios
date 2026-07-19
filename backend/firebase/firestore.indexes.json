@@ -1,0 +1,5 @@
+{
+  "_comment": "scheduledArenaSettlement runs a collectionGroup query on arenas.status == 'active' ordered by __name__. That single-field + document-name query is served by Firestore's automatic collection-group single-field index — no composite index needed here.",
+  "indexes": [],
+  "fieldOverrides": []
+}

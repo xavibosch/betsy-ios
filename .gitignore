@@ -15,6 +15,9 @@ xcuserdata/
 .env.*
 APP/GoogleService-Info.plist
 .claude/
+node_modules/
+.next/
+out/
 
 # Swift Package Manager
 .build/

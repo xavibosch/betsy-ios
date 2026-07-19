@@ -1,0 +1,155 @@
+rules_version = '2';
+
+// Betsy Firestore security rules.
+// Data model:
+//   users/{uid}                         — public-ish profile (name, email)
+//   leagues/{code}                      — { createdBy, members:[uid], membersCount, name, settings }
+//     leagues/{code}/members/{uid}      — { points, name, pointsToday, pointsTodayDate }
+//     leagues/{code}/arenas/{id}        — { challengerId, opponentId, status, wager, ... }
+//     leagues/{code}/challenges/{id}    — challenge requests
+//
+// NOTE: point mutations are still client-side. Once the settlement Cloud
+// Function lands, tighten member/points writes to `if false` (server-only)
+// and route all balance changes through callable/Functions.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // League helpers — read membership from the parent league doc.
+    function leagueData(code) {
+      return get(/databases/$(database)/documents/leagues/$(code)).data;
+    }
+
+    function isLeagueMember(code) {
+      return isSignedIn()
+        && request.auth.uid in leagueData(code).members;
+    }
+
+    function isLeagueAdmin(code) {
+      return isSignedIn()
+        && leagueData(code).createdBy == request.auth.uid;
+    }
+
+    // A non-member joining may ONLY append themselves to `members` — they must not
+    // touch the creator, name or settings. Compares the incoming doc against the
+    // existing one so a join can't be used to hijack a league you don't own.
+    function isSelfJoinOnly() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return isSignedIn()
+        && !(request.auth.uid in before.members)          // was not a member
+        && request.auth.uid in after.members              // becomes a member
+        && after.members == before.members.concat([request.auth.uid]) // only appends self
+        && after.createdBy == before.createdBy            // owner unchanged
+        && after.name == before.name                      // name unchanged
+        && after.settings == before.settings;             // settings unchanged
+    }
+
+    // ---- Users ----
+    match /users/{uid} {
+      // Own profile only — the doc holds the user's email, and nothing in the app reads
+      // another user's profile (rosters use the league members subcollection, Arena rival
+      // names are denormalized into the duel docs). Keeps emails from being enumerable.
+      allow read: if isSelf(uid);
+      // Only the owner can create/update their own profile.
+      allow create, update: if isSelf(uid);
+      allow delete: if isSelf(uid);
+    }
+
+    // ---- Leagues ----
+    match /leagues/{code} {
+      // Split read into get/list — NOT the same permission:
+      //   • get: fetching ONE league by its code (join-by-code preview/join flow).
+      //     Knowing the code is the authorization, so this stays open to any signed-in user.
+      //   • list: a collection QUERY (e.g. "give me every league"). If this were as open as
+      //     get, any signed-in (even anonymous, zero-friction) account could run
+      //     `db.collection("leagues").get()` with no filter and dump every private league in
+      //     the app — names, settings, creator + member uids. Restricting list to "you're
+      //     already a member" makes Firestore silently drop non-member docs from query
+      //     results, which is exactly what the app's own `whereField("members", arrayContains:
+      //     uid)` listener expects — no client change needed for the real listener.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && request.auth.uid in resource.data.members;
+
+      // Create: caller must be the creator and the sole initial member.
+      allow create: if isSignedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.members == [request.auth.uid];
+
+      // Update:
+      //   • existing members can update (admin edits settings, membersCount, etc.)
+      //   • a non-member may update ONLY to append themselves to members (join flow),
+      //     and cannot alter createdBy / name / settings while doing so.
+      allow update: if isSignedIn() && (
+          request.auth.uid in resource.data.members
+          || isSelfJoinOnly()
+        );
+
+      // Delete: admin only.
+      allow delete: if isLeagueAdmin(code);
+
+      // ---- Members subcollection ----
+      match /members/{memberId} {
+        allow read: if isLeagueMember(code);
+        // TODO(server): move point writes to Cloud Functions; set to `if false`.
+        allow create, update: if isLeagueMember(code);
+        allow delete: if isSelf(memberId) || isLeagueAdmin(code);
+
+      // ---- Tickets (apuestas) ----  leagues/{code}/members/{uid}/tickets/{id}
+      match /tickets/{ticketId} {
+        allow read:   if isLeagueMember(code);
+        allow create: if isSelf(memberId);
+        // Settlement is client-side (Phase 1). Phase 2 (server): set to `if false`.
+        allow update: if isSelf(memberId);
+        allow delete: if isSelf(memberId) || isLeagueAdmin(code);
+      }
+
+      // ---- Settlement ledger ----  leagues/{code}/members/{uid}/settlements/{ticketId}
+      // One doc per settled ticket; existence = "this win was already credited". Lets the
+      // client pay out a winning ticket exactly once even across the user's devices.
+      match /settlements/{ticketId} {
+        allow read:   if isLeagueMember(code);
+        allow create: if isSelf(memberId);
+        // Immutable once written — a credited ticket stays credited (Phase 2: `if false`).
+        allow update, delete: if false;
+      }
+
+      }
+
+      // ---- Arena duels ----
+      match /arenas/{duelId} {
+        allow read: if isLeagueMember(code);
+        // Challenger creates; both participants can update (accept, pick, resolve).
+        allow create: if isLeagueMember(code)
+          && request.resource.data.challengerId == request.auth.uid;
+        allow update: if isSignedIn() && (
+            resource.data.challengerId == request.auth.uid
+            || resource.data.opponentId == request.auth.uid
+          );
+        allow delete: if isLeagueAdmin(code);
+      }
+
+      // ---- Challenges ----
+      match /challenges/{challengeId} {
+        allow read: if isLeagueMember(code);
+        allow create: if isLeagueMember(code)
+          && request.resource.data.challengerId == request.auth.uid;
+        // Only the two participants manage their own challenge — not "any league member",
+        // which used to let anyone delete/edit other people's pending challenge requests.
+        allow update, delete: if isSignedIn() && (
+            resource.data.challengerId == request.auth.uid
+            || resource.data.opponentId == request.auth.uid
+            || isLeagueAdmin(code)
+          );
+      }
+    }
+  }
+}

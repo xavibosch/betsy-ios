@@ -4,6 +4,20 @@
 
 Betsy is a mobile-first social sports betting game built for private competition between friends using virtual points, not real money.
 
+This is the single private Betsy monorepo. It consolidates the native iOS product, Firebase backend, public web experience, Remotion promo studio and the unique source files recovered from earlier iOS iterations.
+
+## Monorepo map
+
+| Path | Purpose |
+| --- | --- |
+| `APP/` and `3x.xcodeproj/` | Current native SwiftUI application |
+| `backend/firebase/` | Firestore rules, indexes and Cloud Functions |
+| `web/` | Next.js marketing, support and legal website |
+| `promo/` | Remotion compositions for tutorials and social videos |
+| `archive/legacy-ios-july/` | Unique services from the July iOS iteration |
+| `archive/legacy-ios-may/` | Unique models and UI components from the May iteration |
+| `docs/` | Product, architecture, setup and real screenshots |
+
 ## Real app screens
 
 | League | Markets | Bet slip |
@@ -79,6 +93,14 @@ The current project is already beyond a static prototype. It includes:
   Supporting resources
 - `docs/`
   Product, architecture, and setup documentation
+- `backend/firebase/`
+  Firestore rules, indexes and Functions
+- `web/`
+  Next.js product website
+- `promo/`
+  Remotion video project
+- `archive/`
+  Unique code preserved from superseded iOS repositories
 
 ## Important product concepts
 
