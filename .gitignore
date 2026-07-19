@@ -1,0 +1,28 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Local environment
+.env
+.env.*
+APP/GoogleService-Info.plist
+.claude/
+
+# Swift Package Manager
+.build/
+
+# Python cache
+__pycache__/
+*.pyc
+APP/GoogleService-Info.plist
+APP/Features/Sports/Providers/APISecrets.swift
+xcuserdata/
+.DS_Store
