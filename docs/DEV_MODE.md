@@ -1,4 +1,4 @@
-# Betsy — Dev Mode & User Mode Architecture
+# Betsy — Dev Mode and User Mode
 
 ## Overview
 
@@ -16,12 +16,12 @@ The normal user experience, gated behind Firebase Auth:
 - Signs up / logs in via email+password (Firebase Auth)
 - Their league memberships, balances, bets, and arena duels live in Firestore
 - Profile avatar stored locally per UID (`profileAvatarStoreData`)
-- Sports data will come from a real API (not yet connected — placeholder provider active)
+- Sports data comes from the real APIs through `RealSportsDataProvider`
 - All `LeagueService` calls hit Firestore in real time
 
-**Status:** Auth + leagues + bets + arena are fully wired to Firebase.
-Sports API integration is pending — `RealSportsDataProvider` exists but is
-awaiting API key setup.
+**Status:** auth, leagues, bets and arena are fully wired to Firebase, and the
+sports APIs are connected. Running against real data needs your own keys in
+`APISecrets.swift`.
 
 ---
 
@@ -71,8 +71,12 @@ Sheet accessible only in `#if DEBUG` builds, from the Profile tab:
 ```
 SportsDataProvider
 ├── FakeSportsDataProvider   ← used in dev / when no API key
-└── RealSportsDataProvider   ← used in production (API pending)
+└── RealSportsDataProvider   ← used in production
 ```
+
+`RealSportsDataProvider` calls the Odds API for odds and scores and RapidAPI
+for live fixtures and leagues. `SportsDataRepository` holds both providers and
+picks between them, so the rest of the app never knows which one answered.
 
 `FakeSportsDataProvider` generates a set of plausible fixtures with realistic
 odds, team names, and states (upcoming / live / finished). Bet resolution,
@@ -80,25 +84,26 @@ point settlement, and ranking updates all work end-to-end on fake data.
 
 ---
 
-## Current state (May 2025)
+## Current state
 
 | Area | Status |
 |------|--------|
-| Firebase Auth | ✅ Connected |
-| Firestore (leagues, bets, arena) | ✅ Connected |
-| Dev Mode / tester profiles | ✅ Fully functional |
-| Fake sports data provider | ✅ Functional |
-| Real sports API | ⏳ Pending — provider shell ready |
-| Push notifications (reminders) | ✅ Local notifications wired |
-| Profile stats | ✅ Computed from local ticket history |
-| Arena 1v1 | ✅ Full flow in dev mode |
+| Firebase Auth | Connected |
+| Firestore (leagues, bets, arena) | Connected |
+| Dev Mode / tester profiles | Working |
+| Fake sports data provider | Working |
+| Real sports API | Connected (odds, scores and live fixtures) |
+| Push notifications (reminders) | Local notifications wired |
+| Profile stats | Computed from local ticket history |
+| Arena 1v1 | Full flow |
 
 ---
 
 ## Why this architecture
 
-Building the full UX loop — betting, ranking, arena challenges, profile stats —
+Building the full UX loop (betting, ranking, arena challenges, profile stats)
 without a real sports API would otherwise be impossible in early development.
-The fake provider + tester profiles let us validate the entire product experience,
-run demos, and iterate on UI/UX while the API integration is prepared separately.
-When `RealSportsDataProvider` is connected, the rest of the app requires zero changes.
+The fake provider and tester profiles let us validate the entire product
+experience, run demos, and iterate on UI/UX while the API integration was
+prepared separately. Swapping in `RealSportsDataProvider` needed no changes
+anywhere else in the app, which is what the split was for.
