@@ -4,7 +4,7 @@
 
 Betsy is a mobile-first social sports betting game built for private competition between friends using virtual points, not real money.
 
-This is the single private Betsy monorepo. It consolidates the native iOS product, Firebase backend, public web experience, Remotion promo studio and the unique source files recovered from earlier iOS iterations.
+This monorepo holds the native iOS app, the Firebase backend, the marketing site, the Remotion promo project and source kept from earlier iOS iterations.
 
 ## Monorepo map
 
@@ -81,26 +81,7 @@ The current project is already beyond a static prototype. It includes:
 - local storage via `AppStorage` for lightweight persisted UI state
 - simulated sports data plus a repository layer prepared for real APIs
 
-## Project structure
-
-- `APP/`
-  Main app source
-- `APP/Features/`
-  Product modules such as Onboarding, Home, Play, League, Bets, Arena, Profile
-- `APP/Shared/`
-  Reusable UI, services, helpers, design system pieces
-- `APP/Resources/`
-  Supporting resources
-- `docs/`
-  Product, architecture, and setup documentation
-- `backend/firebase/`
-  Firestore rules, indexes and Functions
-- `web/`
-  Next.js product website
-- `promo/`
-  Remotion video project
-- `archive/`
-  Unique code preserved from superseded iOS repositories
+Inside `APP/`, `Features/` holds the product modules (Onboarding, Home, Play, League, Bets, Arena, Profile), `Shared/` the reusable UI, services and design system pieces, and `Resources/` the supporting assets.
 
 ## Important product concepts
 
@@ -148,7 +129,3 @@ Betsy es una app social deportiva para crear ligas privadas, competir con puntos
 - The app currently mixes real-product flows with simulation-friendly data where needed.
 - Real odds, fixtures, live events, and final production sports integrations can be connected later without redesigning the whole app model.
 - The product is intentionally designed to be testable before becoming fully data-live.
-
-## Suggested GitHub repo description
-
-`Betsy is a social sports competition app where friends create private leagues, place virtual bets, climb rankings, and challenge each other in 1v1 Arena duels.`
