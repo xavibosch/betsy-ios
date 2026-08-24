@@ -79,7 +79,7 @@ The current project is already beyond a static prototype. It includes:
 - Firebase Authentication
 - Firestore for leagues, users, challenges, arenas, and state sync
 - local storage via `AppStorage` for lightweight persisted UI state
-- simulated sports data plus a repository layer prepared for real APIs
+- real sports APIs for odds, scores and fixtures, behind a repository layer that can swap in simulated data
 
 Inside `APP/`, `Features/` holds the product modules (Onboarding, Home, Play, League, Bets, Arena, Profile), `Shared/` the reusable UI, services and design system pieces, and `Resources/` the supporting assets.
 
@@ -98,12 +98,12 @@ Leagues can limit bets per day, making the game feel strategic rather than spamm
 Arena is the direct challenge layer. It creates emotional spikes inside a league by letting one user call out another user for a head-to-head duel.
 
 ### Developer simulation
-The app includes testing-oriented flows so product behavior can be validated before live sports data is fully wired in.
+The app keeps testing-oriented flows so product behavior can be validated without spending API calls or waiting on real fixtures. See [Dev Mode](./docs/DEV_MODE.md).
 
 ## Documentation
 
-- [Product Overview](./docs/PRODUCT_OVERVIEW.md)
 - [Architecture Overview](./docs/ARCHITECTURE.md)
+- [Dev Mode and User Mode](./docs/DEV_MODE.md)
 - [Firebase Setup](./docs/FIREBASE_SETUP.md)
 
 ## Running the app
