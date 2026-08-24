@@ -3,7 +3,7 @@
 ## Current expected app identity
 
 Based on the local project files, Betsy currently expects:
-- Firebase project id: `betsy-2510e`
+- Firebase project id: `betsy-9b8cf`
 - iOS bundle id: `com.pau.Betsy`
 
 Check this in:
