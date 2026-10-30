@@ -1,6 +1,6 @@
 # Betsy
 
-![Betsy](docs/images/betsy-real-hero.jpg)
+![Betsy](docs/images/betsy-hero.webp)
 
 Betsy is a mobile-first social sports betting game built for private competition between friends using virtual points, not real money.
 
@@ -22,7 +22,13 @@ This monorepo holds the native iOS app, the Firebase backend, the marketing site
 
 | League | Markets | Bet slip |
 | --- | --- | --- |
-| ![League](docs/images/betsy-real-league.png) | ![Markets](docs/images/betsy-real-markets.png) | ![Bet slip](docs/images/betsy-real-betslip.png) |
+| ![League](docs/images/betsy-league.webp) | ![Contradictory picks are blocked](docs/images/betsy-markets.webp) | ![A two-match bet slip](docs/images/betsy-betslip.webp) |
+
+| Open bet | Creating a league |
+| --- | --- |
+| ![An open bet, withdrawable by holding](docs/images/betsy-history.webp) | ![Daily round, starting balance and rules](docs/images/betsy-create.webp) |
+
+Screenshots are from the current build (October 2026). Development of that build continues in a private repository; this one holds the code up to September 2026. The full case study is at [boschwebs.website](https://boschwebs.website/#/work/betsy).
 
 The product combines:
 - private leagues
