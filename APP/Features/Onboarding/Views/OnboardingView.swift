@@ -9,7 +9,7 @@ private enum AuthStage: Equatable {
     case login
 }
 
-// MARK: - Root (Stadium dark · matches Claude Design wireframes 01)
+// MARK: - Root (Stadium dark · matches wireframe 01)
 
 struct OnboardingView: View {
     @Binding var hasSeenOnboarding: Bool

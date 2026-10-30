@@ -4,7 +4,7 @@ import UIKit
 #endif
 
 // MARK: - BETSY Design System
-// Direct SwiftUI port of tokens.css (Claude Design wireframes)
+// Direct SwiftUI port of tokens.css (the design wireframes)
 
 enum DS {
     // MARK: - Background layers
